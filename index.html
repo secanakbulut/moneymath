@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>moneymath</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <h1>moneymath</h1>
+      <p class="sub">a few financial calculators that show you the formula they used</p>
+    </header>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="compound">compound interest</button>
+    </nav>
+
+    <section class="panel active" id="panel-compound">
+      <div class="grid">
+        <div class="form">
+          <label>principal
+            <input type="number" id="ci-principal" value="10000" step="any">
+          </label>
+          <label>annual rate (%)
+            <input type="number" id="ci-rate" value="6" step="any">
+          </label>
+          <label>years
+            <input type="number" id="ci-years" value="20" step="any">
+          </label>
+          <label>compounds per year
+            <input type="number" id="ci-n" value="12" step="1">
+          </label>
+          <label>monthly contribution (optional)
+            <input type="number" id="ci-pmt" value="200" step="any">
+          </label>
+          <button id="ci-go">calculate</button>
+        </div>
+
+        <div class="out">
+          <div class="big" id="ci-result">future value: -</div>
+          <div class="formula">
+            <div>A = P (1 + r/n)<sup>nt</sup></div>
+            <div>with monthly contribution PMT:</div>
+            <div>FV = P(1+r/n)<sup>nt</sup> + PMT &middot; ((1+r/n)<sup>nt</sup> - 1) / (r/n)</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="ci-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      math runs in your browser. nothing is sent anywhere.
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
