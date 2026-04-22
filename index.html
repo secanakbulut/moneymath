@@ -16,8 +16,10 @@
 
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="compound">compound interest</button>
+      <button class="tab" data-tab="mortgage">mortgage</button>
     </nav>
 
+    <!-- COMPOUND -->
     <section class="panel active" id="panel-compound">
       <div class="grid">
         <div class="form">
@@ -49,6 +51,46 @@
           <div class="chart-box">
             <canvas id="ci-chart"></canvas>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MORTGAGE -->
+    <section class="panel" id="panel-mortgage">
+      <div class="grid">
+        <div class="form">
+          <label>loan amount
+            <input type="number" id="mt-loan" value="300000" step="any">
+          </label>
+          <label>annual rate (%)
+            <input type="number" id="mt-rate" value="5.5" step="any">
+          </label>
+          <label>term (years)
+            <input type="number" id="mt-years" value="30" step="1">
+          </label>
+          <button id="mt-go">calculate</button>
+        </div>
+
+        <div class="out">
+          <div class="big" id="mt-result">monthly payment: -</div>
+          <div class="formula">
+            <div>M = P &middot; (r(1+r)<sup>n</sup>) / ((1+r)<sup>n</sup> - 1)</div>
+            <div>r is the monthly rate, n is the number of months.</div>
+          </div>
+          <div class="chart-box">
+            <canvas id="mt-chart"></canvas>
+          </div>
+          <details class="amort">
+            <summary>show full amortization table</summary>
+            <div class="table-scroll">
+              <table id="mt-table">
+                <thead>
+                  <tr><th>month</th><th>payment</th><th>principal</th><th>interest</th><th>balance</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </details>
         </div>
       </div>
     </section>

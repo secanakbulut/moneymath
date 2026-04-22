@@ -17,7 +17,9 @@ function fmt(n) {
   return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 }
 
-// --- compound interest ---
+// =====================================================================
+// 1) COMPOUND INTEREST
+// =====================================================================
 let ciChart = null;
 
 function calcCompound() {
@@ -48,8 +50,7 @@ function calcCompound() {
     }
   }
 
-  const fv = bal;
-  document.getElementById('ci-result').textContent = 'future value: ' + fmt(fv);
+  document.getElementById('ci-result').textContent = 'future value: ' + fmt(bal);
 
   const ctx = document.getElementById('ci-chart').getContext('2d');
   if (ciChart) ciChart.destroy();
@@ -89,5 +90,100 @@ function calcCompound() {
 
 document.getElementById('ci-go').addEventListener('click', calcCompound);
 
-// run once on load so the chart is not empty
+// =====================================================================
+// 2) MORTGAGE
+// =====================================================================
+let mtChart = null;
+
+function calcMortgage() {
+  const P = parseFloat(document.getElementById('mt-loan').value) || 0;
+  const annual = (parseFloat(document.getElementById('mt-rate').value) || 0) / 100;
+  const years = parseFloat(document.getElementById('mt-years').value) || 0;
+
+  const r = annual / 12;
+  const n = Math.round(years * 12);
+
+  // M = P * (r(1+r)^n) / ((1+r)^n - 1)
+  let M;
+  if (r === 0) {
+    M = P / n;
+  } else {
+    const pow = Math.pow(1 + r, n);
+    M = P * (r * pow) / (pow - 1);
+  }
+
+  const rows = [];
+  let bal = P;
+  let totalInterest = 0;
+  const yrPrincipal = [];
+  const yrInterest = [];
+  let curYearP = 0, curYearI = 0;
+
+  for (let i = 1; i <= n; i++) {
+    const interest = bal * r;
+    let principal = M - interest;
+    if (i === n) principal = bal; // last row: clean up rounding drift
+    bal -= principal;
+    if (bal < 0) bal = 0;
+    totalInterest += interest;
+
+    curYearP += principal;
+    curYearI += interest;
+    if (i % 12 === 0 || i === n) {
+      yrPrincipal.push(curYearP);
+      yrInterest.push(curYearI);
+      curYearP = 0;
+      curYearI = 0;
+    }
+
+    rows.push({ i, payment: M, principal, interest, balance: bal });
+  }
+
+  document.getElementById('mt-result').innerHTML =
+    'monthly payment: ' + fmt(M) +
+    '<br><span style="font-size:14px;color:#666">total interest paid: ' + fmt(totalInterest) + '</span>';
+
+  // table
+  const tbody = document.querySelector('#mt-table tbody');
+  tbody.innerHTML = '';
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + row.i + '</td>' +
+      '<td>' + fmt(row.payment) + '</td>' +
+      '<td>' + fmt(row.principal) + '</td>' +
+      '<td>' + fmt(row.interest) + '</td>' +
+      '<td>' + fmt(row.balance) + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  // stacked bar by year
+  const ctx = document.getElementById('mt-chart').getContext('2d');
+  if (mtChart) mtChart.destroy();
+  const yearLabels = yrPrincipal.map((_, i) => 'year ' + (i + 1));
+  mtChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: yearLabels,
+      datasets: [
+        { label: 'principal', data: yrPrincipal, backgroundColor: '#1c1c1c' },
+        { label: 'interest', data: yrInterest, backgroundColor: '#c0a060' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, ticks: { callback: v => '$' + v.toLocaleString() } }
+      }
+    }
+  });
+}
+
+document.getElementById('mt-go').addEventListener('click', calcMortgage);
+
+// run defaults on load
 calcCompound();
+calcMortgage();
