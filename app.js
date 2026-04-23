@@ -184,6 +184,76 @@ function calcMortgage() {
 
 document.getElementById('mt-go').addEventListener('click', calcMortgage);
 
+// =====================================================================
+// shared cash-flow row builder
+// =====================================================================
+function makeRow(container, t, val) {
+  const row = document.createElement('div');
+  row.className = 'cf-row';
+  row.innerHTML =
+    '<span class="t">t=' + t + '</span>' +
+    '<input type="number" step="any" value="' + val + '">' +
+    '<button type="button" class="rm" title="remove">&times;</button>';
+  row.querySelector('.rm').addEventListener('click', () => {
+    row.remove();
+    renumber(container);
+  });
+  container.appendChild(row);
+}
+
+function renumber(container) {
+  [...container.children].forEach((row, idx) => {
+    row.querySelector('.t').textContent = 't=' + idx;
+  });
+}
+
+function readFlows(container) {
+  return [...container.children].map(row => parseFloat(row.querySelector('input').value) || 0);
+}
+
+// =====================================================================
+// 3) NPV
+// =====================================================================
+const npvRows = document.getElementById('npv-rows');
+[-10000, 3000, 4000, 5000, 4000].forEach((v, i) => makeRow(npvRows, i, v));
+
+document.getElementById('npv-add').addEventListener('click', () => {
+  makeRow(npvRows, npvRows.children.length, 0);
+});
+
+function npvOf(rate, flows) {
+  let s = 0;
+  for (let t = 0; t < flows.length; t++) {
+    s += flows[t] / Math.pow(1 + rate, t);
+  }
+  return s;
+}
+
+function calcNPV() {
+  const rate = (parseFloat(document.getElementById('npv-rate').value) || 0) / 100;
+  const flows = readFlows(npvRows);
+  const value = npvOf(rate, flows);
+
+  document.getElementById('npv-result').textContent = 'npv: ' + fmt(value);
+
+  const tbody = document.querySelector('#npv-table tbody');
+  tbody.innerHTML = '';
+  flows.forEach((cf, t) => {
+    const df = 1 / Math.pow(1 + rate, t);
+    const pv = cf * df;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + t + '</td>' +
+      '<td>' + fmt(cf) + '</td>' +
+      '<td>' + df.toFixed(6) + '</td>' +
+      '<td>' + fmt(pv) + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('npv-go').addEventListener('click', calcNPV);
+
 // run defaults on load
 calcCompound();
 calcMortgage();
+calcNPV();
