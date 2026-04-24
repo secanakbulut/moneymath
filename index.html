@@ -18,6 +18,7 @@
       <button class="tab active" data-tab="compound">compound interest</button>
       <button class="tab" data-tab="mortgage">mortgage</button>
       <button class="tab" data-tab="npv">npv</button>
+      <button class="tab" data-tab="irr">irr</button>
     </nav>
 
     <!-- COMPOUND -->
@@ -125,6 +126,35 @@
               </thead>
               <tbody></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IRR -->
+    <section class="panel" id="panel-irr">
+      <div class="grid">
+        <div class="form">
+          <div class="cf-block">
+            <div class="cf-head">
+              <span>cash flows (first one is usually negative)</span>
+              <button type="button" id="irr-add" class="small">add row</button>
+            </div>
+            <div id="irr-rows" class="cf-rows"></div>
+          </div>
+          <button id="irr-go">calculate</button>
+        </div>
+
+        <div class="out">
+          <div class="big" id="irr-result">irr: -</div>
+          <div class="formula">
+            <div>find r so that &Sigma; CF<sub>t</sub> / (1+r)<sup>t</sup> = 0</div>
+            <div>newton-raphson: x<sub>k+1</sub> = x<sub>k</sub> - f(x<sub>k</sub>) / f'(x<sub>k</sub>)</div>
+            <div>derivative is taken numerically.</div>
+          </div>
+          <div class="log-box">
+            <div class="log-title">iteration log</div>
+            <pre id="irr-log"></pre>
           </div>
         </div>
       </div>

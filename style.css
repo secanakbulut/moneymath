@@ -247,6 +247,28 @@ th {
   top: 0;
 }
 
+.log-box {
+  background: #fff;
+  border: 1px solid #d8d8d3;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.log-title {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 6px;
+}
+
+.log-box pre {
+  margin: 0;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre;
+}
+
 .foot {
   margin-top: 48px;
   font-size: 12px;

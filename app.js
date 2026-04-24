@@ -253,7 +253,63 @@ function calcNPV() {
 
 document.getElementById('npv-go').addEventListener('click', calcNPV);
 
+// =====================================================================
+// 4) IRR via Newton-Raphson
+// =====================================================================
+function fmtPct(n) {
+  if (!isFinite(n)) return '-';
+  return (n * 100).toFixed(4) + '%';
+}
+
+const irrRows = document.getElementById('irr-rows');
+[-10000, 3000, 4200, 5100, 4800].forEach((v, i) => makeRow(irrRows, i, v));
+
+document.getElementById('irr-add').addEventListener('click', () => {
+  makeRow(irrRows, irrRows.children.length, 0);
+});
+
+function calcIRR() {
+  const flows = readFlows(irrRows);
+  const log = [];
+
+  // f(r) = NPV(r), we want f(r) = 0
+  // f'(r) is taken numerically with a small h
+  const h = 1e-5;
+  let x = 0.1; // starting guess
+  log.push('start guess: 0.1');
+
+  let converged = false;
+  for (let k = 0; k < 100; k++) {
+    const f = npvOf(x, flows);
+    const fp = (npvOf(x + h, flows) - npvOf(x - h, flows)) / (2 * h);
+
+    log.push(
+      'iter ' + (k + 1).toString().padStart(3, ' ') +
+      '  r=' + x.toFixed(8) +
+      '  npv=' + f.toFixed(6) +
+      "  npv'=" + fp.toFixed(4)
+    );
+
+    if (Math.abs(f) < 1e-7) { converged = true; break; }
+    if (fp === 0) { log.push('derivative was zero, bailing'); break; }
+
+    const next = x - f / fp;
+    if (!isFinite(next) || next < -0.999) {
+      log.push('iteration went out of bounds');
+      break;
+    }
+    x = next;
+  }
+
+  document.getElementById('irr-log').textContent = log.join('\n');
+  document.getElementById('irr-result').textContent =
+    'irr: ' + (converged ? fmtPct(x) : '(did not converge)');
+}
+
+document.getElementById('irr-go').addEventListener('click', calcIRR);
+
 // run defaults on load
 calcCompound();
 calcMortgage();
 calcNPV();
+calcIRR();
