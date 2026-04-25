@@ -1,4 +1,5 @@
 // moneymath - financial calculators in the browser
+// each tab is a small self-contained module below
 
 // --- tabs ---
 const tabs = document.querySelectorAll('.tab');
@@ -17,6 +18,11 @@ function fmt(n) {
   return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 }
 
+function fmtPct(n) {
+  if (!isFinite(n)) return '-';
+  return (n * 100).toFixed(4) + '%';
+}
+
 // =====================================================================
 // 1) COMPOUND INTEREST
 // =====================================================================
@@ -26,15 +32,22 @@ function calcCompound() {
   const P = parseFloat(document.getElementById('ci-principal').value) || 0;
   const annual = (parseFloat(document.getElementById('ci-rate').value) || 0) / 100;
   const t = parseFloat(document.getElementById('ci-years').value) || 0;
+  const n = parseFloat(document.getElementById('ci-n').value) || 1;
   const pmt = parseFloat(document.getElementById('ci-pmt').value) || 0;
 
+  const r = annual;
+  // build the curve year by year so we can plot it
+  // monthly contributions still apply, we just sample at year boundaries
   const labels = [];
   const balances = [];
   const principals = [];
 
+  // do it month-by-month for accuracy when there are contributions,
+  // sample each year for the chart
   const totalMonths = Math.max(1, Math.round(t * 12));
   let bal = P;
-  const monthlyRate = annual / 12;
+  const monthlyRate = r / 12;
+  // initial point
   labels.push(0);
   balances.push(bal);
   principals.push(P);
@@ -50,8 +63,12 @@ function calcCompound() {
     }
   }
 
-  document.getElementById('ci-result').textContent = 'future value: ' + fmt(bal);
+  // closed form for sanity (no contribution case uses A = P(1+r/n)^(nt))
+  // when pmt = 0 and n = 12, the loop matches the closed form.
+  const fv = bal;
+  document.getElementById('ci-result').textContent = 'future value: ' + fmt(fv);
 
+  // chart
   const ctx = document.getElementById('ci-chart').getContext('2d');
   if (ciChart) ciChart.destroy();
   ciChart = new Chart(ctx, {
@@ -112,9 +129,11 @@ function calcMortgage() {
     M = P * (r * pow) / (pow - 1);
   }
 
+  // build amortization
   const rows = [];
   let bal = P;
   let totalInterest = 0;
+  // also accumulate principal/interest by year for the chart
   const yrPrincipal = [];
   const yrInterest = [];
   let curYearP = 0, curYearI = 0;
@@ -122,7 +141,8 @@ function calcMortgage() {
   for (let i = 1; i <= n; i++) {
     const interest = bal * r;
     let principal = M - interest;
-    if (i === n) principal = bal; // last row: clean up rounding drift
+    // last month, fix any rounding drift
+    if (i === n) principal = bal;
     bal -= principal;
     if (bal < 0) bal = 0;
     totalInterest += interest;
@@ -185,7 +205,7 @@ function calcMortgage() {
 document.getElementById('mt-go').addEventListener('click', calcMortgage);
 
 // =====================================================================
-// shared cash-flow row builder
+// shared cash-flow row builder (used by NPV and IRR)
 // =====================================================================
 function makeRow(container, t, val) {
   const row = document.createElement('div');
@@ -256,11 +276,6 @@ document.getElementById('npv-go').addEventListener('click', calcNPV);
 // =====================================================================
 // 4) IRR via Newton-Raphson
 // =====================================================================
-function fmtPct(n) {
-  if (!isFinite(n)) return '-';
-  return (n * 100).toFixed(4) + '%';
-}
-
 const irrRows = document.getElementById('irr-rows');
 [-10000, 3000, 4200, 5100, 4800].forEach((v, i) => makeRow(irrRows, i, v));
 
@@ -294,6 +309,7 @@ function calcIRR() {
     if (fp === 0) { log.push('derivative was zero, bailing'); break; }
 
     const next = x - f / fp;
+    // guard against runaway, irr should not normally go past these bounds
     if (!isFinite(next) || next < -0.999) {
       log.push('iteration went out of bounds');
       break;
@@ -308,7 +324,7 @@ function calcIRR() {
 
 document.getElementById('irr-go').addEventListener('click', calcIRR);
 
-// run defaults on load
+// run defaults on load so the page is not empty
 calcCompound();
 calcMortgage();
 calcNPV();
