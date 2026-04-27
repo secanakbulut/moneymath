@@ -1,6 +1,9 @@
 # moneymath
 
-![](docs/screenshot.png)
+<p align="center">
+  <img src="docs/screenshot.png" width="48%"/>
+  <img src="docs/screenshot-2.png" width="48%"/>
+</p>
 
 A small toolkit of financial calculators that show their math instead of hiding it. I kept finding myself opening a spreadsheet for the same four things, so I put them in one page.
 
