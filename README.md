@@ -1,5 +1,7 @@
 # moneymath
 
+![](docs/screenshot.png)
+
 A small toolkit of financial calculators that show their math instead of hiding it. I kept finding myself opening a spreadsheet for the same four things, so I put them in one page.
 
 Four tabs:
